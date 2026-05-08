@@ -34,3 +34,6 @@ The project uses `.env` files for environment variables (e.g., API keys). Ensure
 - **Agent Definition:** New agents or modifications to existing ones should be done in `hepara/agent.py`.
 - **Framework Usage:** Follow `google-adk` patterns for agent creation and tool integration.
 - **Asynchronous Code:** Use `asyncio` for running agents and handling tool calls.
+
+# License
+This project is licensed under the MIT License. See the `LICENSE` file for full details.

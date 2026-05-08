@@ -31,8 +31,14 @@ venv/
 ENV/
 
 # Project specific
-hepara/.adk/
+**/.adk/
+hepara/subagents/**/*_record.json
 .python-version
+
+# Python development
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
 
 # IDEs
 .vscode/

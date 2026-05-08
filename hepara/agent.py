@@ -1,12 +1,19 @@
 from google.adk.agents.llm_agent import Agent
-from google.adk.tools import google_search
+from google.adk.tools.agent_tool import AgentTool
 from google.genai import types
+from .subagents.citations_tracker.agent import citations_tracker
+from .subagents.arxiv_tracker.agent import arxiv_tracker
+from .prompt import HEP_COORDINATOR_PROMPT
 
-root_agent = Agent(
+hep_coordinator = Agent(
     model='gemini-2.5-flash',
-    name='root_agent',
-    description='A helpful assistant for user questions.',
-    instruction='Your are a research assistant in High Energy Physics.',
-    tools=[google_search],
+    name='hep_coordinator',
+    description="""
+        You are a research assistant in High Energy Physics, 
+        tracking citations of user, locating current papers, 
+        and providing research advices.
+    """,
+    instruction=HEP_COORDINATOR_PROMPT,
+    tools=[AgentTool(citations_tracker), AgentTool(arxiv_tracker)],
 )
 
