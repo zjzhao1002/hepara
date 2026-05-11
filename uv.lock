@@ -167,7 +167,7 @@ wheels = [
 
 [[package]]
 name = "arxivflow"
-version = "0.1.1"
+version = "0.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "arxiv" },
@@ -181,9 +181,9 @@ dependencies = [
     { name = "pymupdf" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d0/8b/4edfa2452f9db8a535e9c842fc8859da6905a022c7cadd23e18b10eefc2f/arxivflow-0.1.1.tar.gz", hash = "sha256:96bae5a4aeb05430edf50d846927392ae15e408be2f52e65448d164c03f3d00c", size = 13997, upload-time = "2026-05-01T13:52:56.46Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6b/52/93c401823810185de44ceb3ad72cd57bf4f1d1fbf056b015034220b496db/arxivflow-0.1.2.tar.gz", hash = "sha256:660e20d127a121a0f96c27af9652247fd5aac158ffdf5af1f2b537da0fa39572", size = 15098, upload-time = "2026-05-08T09:34:57.803Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b4/a7/f2b7fe5b092f9d34c4099da81b2d12d6d78b40d25808c0df9e674fc4dd31/arxivflow-0.1.1-py3-none-any.whl", hash = "sha256:99a72afb81b8be0cd045b10186bfdb43fd9f699416713de5a3db39e241d43836", size = 11634, upload-time = "2026-05-01T13:52:54.987Z" },
+    { url = "https://files.pythonhosted.org/packages/88/82/60f31cec171dbc576bb03ab78bd221af0169d6bdfe262f357ed5a8b23f76/arxivflow-0.1.2-py3-none-any.whl", hash = "sha256:042b04ea0a58a24ca237614bad0e7f0c8b29164bfaac6919db45a483ce574c49", size = 12126, upload-time = "2026-05-08T09:34:56.406Z" },
 ]
 
 [[package]]

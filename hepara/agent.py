@@ -3,6 +3,7 @@ from google.adk.tools.agent_tool import AgentTool
 from google.genai import types
 from .subagents.citations_tracker.agent import citations_tracker
 from .subagents.arxiv_tracker.agent import arxiv_tracker
+from .subagents.inspirehep_agent.agent import inspirehep_agent
 from .prompt import HEP_COORDINATOR_PROMPT
 
 hep_coordinator = Agent(
@@ -14,6 +15,6 @@ hep_coordinator = Agent(
         and providing research advices.
     """,
     instruction=HEP_COORDINATOR_PROMPT,
-    tools=[AgentTool(citations_tracker), AgentTool(arxiv_tracker)],
+    tools=[AgentTool(citations_tracker), AgentTool(arxiv_tracker), AgentTool(inspirehep_agent)],
 )
 

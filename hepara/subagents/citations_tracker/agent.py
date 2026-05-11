@@ -3,6 +3,7 @@ import json
 import requests
 import pandas as pd
 from google.adk.agents.llm_agent import Agent
+from google.adk.tools import FunctionTool
 from .prompt import CITATIONS_TRACKER_PROMPT
 
 # Load environment variables (should be loaded in the main entry point)
@@ -16,7 +17,7 @@ def get_inspire_citations(author: str, max_papers: int = 100) -> list:
     if not author:
         return []
         
-    inspire_profile = f'https://inspirehep.net/api/literature?sort=mostrecent&size={max_papers}&q=a%20{author}'
+    inspire_profile = f'https://inspirehep.net/api/literature?sort=mostrecent&size={max_papers}&q=a%20{author}&fields=titles,arxiv_eprints,citation_count'
 
     try:
         response = requests.get(inspire_profile)
@@ -96,10 +97,12 @@ def track_and_report_citations() -> str:
 
     return report
 
+track_and_report_citations_tool = FunctionTool(func=track_and_report_citations)
+
 citations_tracker = Agent(
     model='gemini-2.5-flash',
     name='citations_tracker',
     description='A helpful assistant for tracking paper citations of the user.',
     instruction=CITATIONS_TRACKER_PROMPT,
-    tools=[track_and_report_citations, get_inspire_citations]
+    tools=[track_and_report_citations]
 )

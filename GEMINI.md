@@ -5,7 +5,7 @@ HEP-AI-Assistant is a research assistant specialized in High Energy Physics (HEP
 - **Language:** Python 3.13+
 - **Framework:** `google-adk` (Google Agent Development Kit)
 - **Model:** Gemini 2.5 Flash
-- **Tools:** Google Search
+- **Tools:** Google Search, InspireHEP MCP (Model Context Protocol)
 - **Environment Management:** `uv`
 
 # Building and Running
@@ -27,7 +27,11 @@ The project uses `.env` files for environment variables (e.g., API keys). Ensure
 
 # Architecture
 - `main.py`: The entry point that initializes the environment and runs the `root_agent`.
-- `hepara/agent.py`: Defines the `root_agent` with its instructions, model, and tools.
+- `hepara/agent.py`: Defines the `root_agent` (coordinator) which orchestrates sub-agents.
+- `hepara/subagents/`: Contains specialized agents:
+    - `arxiv_tracker`: Monitors arXiv for trends.
+    - `citations_tracker`: Tracks user citations on INSPIRE-HEP.
+    - `inspirehep_agent`: Searches for papers using the InspireHEP MCP toolset.
 - `hepara/`: Main package containing agent definitions and ADK-related artifacts (`.adk/`).
 
 # Development Conventions
