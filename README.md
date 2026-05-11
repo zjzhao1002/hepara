@@ -21,7 +21,7 @@
 -   **Core:** [Google Agent Development Kit (ADK)](https://github.com/google/adk)
 -   **Model:** Google Gemini 2.5 Flash
 -   **Package Manager:** [uv](https://github.com/astral-sh/uv)
--   **Data Sources:** INSPIRE-HEP (via `inspirehep-mcp`), arXiv API
+-   **Data Sources:** INSPIRE-HEP (via [inspirehep-mcp](https://github.com/MohamedElashri/inspirehep-mcp)), arXiv API
 
 ---
 
