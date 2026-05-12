@@ -89,7 +89,7 @@ def recommend_by_trends() -> dict:
 
 recommend_by_trends_tool = FunctionTool(func=recommend_by_trends)
 
-arxiv_tracker = Agent(
+arxiv_agent = Agent(
     model='gemini-2.5-flash',
     name='arxiv_tracker',
     description="An arXiv tracker that can track the trending papers in the user's research field.",

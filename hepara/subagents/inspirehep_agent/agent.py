@@ -1,26 +1,17 @@
-from google.adk.agents import Agent
-from google.adk.tools.mcp_tool import McpToolset
-from google.adk.tools.mcp_tool.mcp_session_manager import StdioConnectionParams
-from mcp import StdioServerParameters
-from .prompt import INSPIREHEP_AGENT_PROMPT
-from dotenv import load_dotenv
+from google.adk.agents.llm_agent import Agent
+from google.adk.tools import FunctionTool
+from .prompt import CITATIONS_TRACKER_PROMPT
+from .tools import get_author_citations, get_paper_citations, track_citations_updates
 
-load_dotenv()
-
-inspirehep_toolset = McpToolset(
-    connection_params=StdioConnectionParams(
-        server_params=StdioServerParameters(
-            command = "uvx", 
-            args = ["inspirehep-mcp"]
-        )
-    )
-)
+get_author_citations_tool = FunctionTool(func=get_author_citations)
+get_paper_citations_tool = FunctionTool(func=get_paper_citations)
+track_citations_updates_tool = FunctionTool(func=track_citations_updates)
 
 inspirehep_agent = Agent(
-    model="gemini-2.5-flash",
-    name="InspireHepAgent",
-    description="You are an assistant for the InspireHEP MCP API. Use the tools provided to interact with the API.",
-    instruction=INSPIREHEP_AGENT_PROMPT,
-    tools=[inspirehep_toolset],
+    model='gemini-2.5-flash',
+    name='citations_tracker',
+    description='A helpful assistant for tracking paper citations of the user and retrieving citation graphs (references or citations) for specific papers.',
+    instruction=CITATIONS_TRACKER_PROMPT,
+    tools=[get_author_citations_tool, get_paper_citations_tool, track_citations_updates_tool],
     output_key="inspirehep_report"
 )

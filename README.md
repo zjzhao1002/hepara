@@ -11,17 +11,16 @@
 
 ## 🚀 Features
 
--   **📊 Citation Tracking:** Monitor your own citation counts and get notified of new citations automatically using INSPIRE-HEP data.
--   **📑 arXiv Monitoring:** Stay up-to-date with the latest papers in specific HEP categories (e.g., hep-ph, hep-th) and discover trending topics.
--   **🔍 InspireHEP Search:** Search for literature directly on INSPIRE-HEP using keywords via the integrated MCP toolset.
--   **🤖 Multi-Agent Architecture:** Powered by a coordinator agent that orchestrates specialized sub-agents (`arxiv_tracker`, `citations_tracker`, `inspirehep_agent`) for different research tasks.
+-   **📊 Citation Tracking & Search:** Monitor your own citation counts and search for literature directly on INSPIRE-HEP using the integrated `inspirehep_agent`.
+-   **📑 arXiv Monitoring:** Stay up-to-date with the latest papers in specific HEP categories (e.g., hep-ph, hep-th) and discover trending topics via the `arxiv_agent`.
+-   **🤖 Multi-Agent Architecture:** Powered by a coordinator agent that orchestrates specialized sub-agents (`arxiv_agent`, `inspirehep_agent`) for different research tasks.
 
 ## 🛠️ Tech Stack
 
 -   **Core:** [Google Agent Development Kit (ADK)](https://github.com/google/adk)
 -   **Model:** Google Gemini 2.5 Flash
 -   **Package Manager:** [uv](https://github.com/astral-sh/uv)
--   **Data Sources:** INSPIRE-HEP (via `inspirehep-mcp`), arXiv API
+-   **Data Sources:** INSPIRE-HEP, arXiv API
 
 ---
 
@@ -87,9 +86,8 @@ Upon startup, HEPARA will:
 ├── hepara/
 │   ├── agent.py           # Root Coordinator Agent
 │   ├── subagents/
-│   │   ├── arxiv_tracker/     # arXiv monitoring and trends
-│   │   ├── citations_tracker/ # INSPIRE-HEP citation tracking
-│   │   └── inspirehep_agent/  # InspireHEP search via MCP
+│   │   ├── arxiv_agent/       # arXiv monitoring and trends
+│   │   └── inspirehep_agent/  # INSPIRE-HEP citation tracking and search
 ├── main.py                # Entry point (CLI)
 ├── pyproject.toml         # Dependencies and project metadata
 └── README.md              # This file
