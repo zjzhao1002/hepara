@@ -52,7 +52,8 @@
     GOOGLE_API_KEY=your_api_key_here
 
     # User Configuration
-    AUTHOR=your_inspirehep_author_identifier # It should be something like Joe.Smith.1 
+    AUTHOR="your name" # To get accurate results, the INSPIRE-HEP author identifier is recommended. 
+                       # It should be something like Joe.Smith.1 
     CATEGORIES="hep-ph, hep-th" # The arXiv categories you are interested in
     OLLAMA_MODEL="llama3" # Used for keyword extraction via arXivFlow
     ```

@@ -14,7 +14,7 @@ HEP_COORDINATOR_PROMPT = """
     You should then summarize the report and present it to the user in a concise manner.
 
     Paper Recommendation: 
-    When the user asks for the trends in the field, call the arxiv_tracker tool to recommend papers based on the trends in the field.
+    When the user asks for the trends in the field, call the arxiv_agent tool to recommend papers based on the trends in the field.
     Remind user that this process may take several minutes. 
     The subagent should return an 'arxiv_report' containing the trending keywords and the recommended papers.
     You should then summarize the report and present it to the user in a concise manner, highlighting the trending keywords and the titles of the recommended papers.
