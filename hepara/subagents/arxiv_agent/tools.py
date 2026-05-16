@@ -1,9 +1,200 @@
 import os
+import httpx
+import time
+import asyncio
+import xml.etree.ElementTree as ET
+from typing import Dict, Any, List, Optional
 from arxivflow import arXivFlow
 from collections import Counter
 
 CATEGORIES = os.getenv("CATEGORIES")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL")
+
+BASE_URL = "https://export.arxiv.org/api/query"
+ARXIV_NS = {
+    "atom": "http://www.w3.org/2005/Atom",
+    "arxiv": "http://arxiv.org/schemas/atom"
+}
+
+ARXIV_HEADERS = {
+    "User-Agent": "HEPARA/0.1.0 (https://github.com/zjzhao1002/HEP-AI-Assistant; research tool)"
+}
+
+_last_request_time = 0.0
+_request_lock = asyncio.Lock()
+MIN_REQUEST_INTERVAL = 3.0
+
+async def search_papers(query: str, 
+                        max_results: Optional[int] = None, 
+                        sort_by: str = 'submittedDate', 
+                        order_by: str = 'descending',
+                        client: Optional[httpx.AsyncClient] = None
+                        ) -> List[Dict[str, Any]]:
+    """
+    Searches for papers on arXiv using the Atom API.
+    """
+    params = {
+        "search_query": query,
+        "sortBy": sort_by,
+        "sortOrder": order_by
+    }
+    if max_results:
+        params["max_results"] = max_results # type: ignore
+
+    if client:
+        response = await _rate_limit_request(client=client, url=BASE_URL, params=params)
+        return _parse_arxiv_atom_response(response.text)
+    else:
+        async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as new_client:
+            response = await _rate_limit_request(client=new_client, url=BASE_URL, params=params)
+            return _parse_arxiv_atom_response(response.text)
+    
+async def _rate_limit_request(client: httpx.AsyncClient, url: str, params: Optional[Dict] = None) -> httpx.Response:
+    global _last_request_time
+
+    # Enforce minimum interval before sending to comply with arXiv's 3s rule
+    async with _request_lock:
+        elapsed = time.monotonic() - _last_request_time
+        if elapsed < MIN_REQUEST_INTERVAL:
+            await asyncio.sleep(MIN_REQUEST_INTERVAL - elapsed)
+        _last_request_time = time.monotonic()
+
+    async with asyncio.Semaphore(3): # Only 3 tasks can enter here at once.
+        for attempt in range(3): # Retry on timeout or 503
+            try:
+                response = await client.get(url, params=params, headers=ARXIV_HEADERS)
+                if response.status_code == 429:
+                    print(f"arXiv is rate limiting (429). Waiting 60 seconds...")
+                    await asyncio.sleep(60.0)
+                    continue
+                if response.status_code == 503:
+                    print("arXiv service unavailable (503). Waiting 5 seconds...")
+                    await asyncio.sleep(5.0)
+                    continue
+                
+                response.raise_for_status()
+                return response
+            except (httpx.TimeoutException, httpx.NetworkError) as e:
+                if attempt < 2:
+                    print(f"arXiv request failed ({e}). Retrying in 5s...")
+                    await asyncio.sleep(5.0)
+                else:
+                    raise
+
+    raise RuntimeError("arXiv request failed after retries.")
+    
+def _parse_arxiv_atom_response(text: str) -> List[Dict[str, Any]]:
+    results = []
+
+    try: 
+        root = ET.fromstring(text)
+        for entry in root.findall('atom:entry', ARXIV_NS):
+            id_elem = entry.find('atom:id', ARXIV_NS)
+            if id_elem is None or id_elem.text is None:
+                continue
+            
+            arxiv_url = id_elem.text
+            paper_id = arxiv_url.split('/abs/')[-1]
+            short_id = paper_id.split('v')[0]
+
+            title_elem = entry.find('atom:title', ARXIV_NS)
+            title = (
+                title_elem.text.strip().replace('\n', ' ') 
+                if title_elem is not None and title_elem.text 
+                else ""
+                )
+            
+            authors = []
+            for author in entry.findall('atom:author', ARXIV_NS):
+                name_elem = author.find('atom:name', ARXIV_NS)
+                if name_elem is not None and name_elem.text:
+                    authors.append(name_elem.text)
+
+            summary_elem = entry.find('atom:summary', ARXIV_NS)
+            abstract = (
+                summary_elem.text.strip().replace('\n', ' ')
+                if summary_elem is not None and summary_elem.text
+                else ""
+            )
+
+            categories = []
+            for cat in entry.findall('arxiv:primary_category', ARXIV_NS):
+                term = cat.get('term')
+                if term:
+                    categories.append(term)
+            for cat in entry.findall('atom:category', ARXIV_NS):
+                term = cat.get('term')
+                if term and term not in categories:
+                    categories.append(term)
+
+            published = entry.findtext('atom:published', default="", namespaces=ARXIV_NS)[:10]
+            updated = entry.findtext('atom:updated', default="", namespaces=ARXIV_NS)[:10]
+
+            pdf_url = None
+            for link in entry.findall('atom:link', ARXIV_NS):
+                if link.get('title') == 'pdf':
+                    pdf_url = link.get('href')
+                    break
+            if not pdf_url:
+                pdf_url = f"https://arxiv.org/pdf/{paper_id}"
+
+            results.append(
+                {
+                    "arXiv ID": short_id,
+                    "Title": title,
+                    "Authors": ", ".join(authors),
+                    "Abstract": abstract,
+                    "Categories": ", ".join(categories),
+                    "Published Date": published,
+                    "Updated Date": updated,
+                    "arXiv URL": arxiv_url,
+                    "PDF URL": pdf_url
+                }
+            )
+    except ET.ParseError as e:
+        raise ValueError(f"Failed parsing arXiv API response: {e}")
+    
+    return results
+
+async def download_pdf(
+        arxiv_id: str,
+        dirpath: str = "./",
+        filename: str = "",
+        client: Optional[httpx.AsyncClient] = None
+    ) -> str:
+    """
+    Downloads the PDF for a given arXiv ID asynchronously, respecting arXiv's rate limits.
+    """
+    if not arxiv_id:
+        raise ValueError("No arXiv ID provided")
+
+    # Search for the paper to get the PDF URL
+    results = await search_papers(query=f"id:{arxiv_id}", max_results=1, client=client)
+    if not results:
+        raise ValueError(f"Could not find paper with arXiv ID: {arxiv_id}")
+
+    pdf_url = results[0].get("PDF URL")
+    if not pdf_url:
+        raise ValueError(f"No PDF URL found for arXiv ID: {arxiv_id}")
+
+    if not filename:
+        filename = f"{arxiv_id}.pdf"
+        if not filename.endswith(".pdf"):
+            filename += ".pdf"
+
+    path = os.path.join(dirpath, filename)
+
+    if client:
+        response = await _rate_limit_request(client=client, url=pdf_url)
+        with open(path, 'wb') as f:
+            f.write(response.content)
+    else:
+        async with httpx.AsyncClient(timeout=60.0, follow_redirects=True) as new_client:
+            response = await _rate_limit_request(client=new_client, url=pdf_url)
+            with open(path, 'wb') as f:
+                f.write(response.content)
+
+    return path
 
 def _calculate_relevance(row_keywords: str | list[str], search_keywords: list[str]) -> int:
     """
@@ -23,7 +214,7 @@ def _calculate_relevance(row_keywords: str | list[str], search_keywords: list[st
     matches = set(search_k_lower) & set(row_k_list)
     return len(matches)
 
-def recommend_by_trends(max_results: int=100) -> dict:
+async def recommend_by_trends(max_results: int=100) -> dict:
     """
     Recommends latest papers based on trending topics in the last week.
     It finds the most frequent keywords in the latest papers and recommends papers matching those keywords.
@@ -34,8 +225,8 @@ def recommend_by_trends(max_results: int=100) -> dict:
     categories = [cat.strip() for cat in CATEGORIES.split(',') if cat.strip()]
     # Initialize arXivFlow and fetch data
     flow = arXivFlow(categories=categories, ollama_model=OLLAMA_MODEL, max_results=max_results)
-    flow.set_client_parameters(delay_seconds=3.0, num_retries=3)
-    df = flow.get_arxiv_data(download_pdfs=False)
+    # flow.set_client_parameters(delay_seconds=3.0, num_retries=3)
+    df = await flow.get_arxiv_data(download_pdfs=False)
 
     if df is None or df.empty:
         return {"error": "Error:No papers found for the specified categories."}

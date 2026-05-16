@@ -153,24 +153,10 @@ wheels = [
 ]
 
 [[package]]
-name = "arxiv"
-version = "3.0.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "feedparser" },
-    { name = "requests" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/ff/78/1e93a001ed51b5114e1978247078fa3130cbb2794a520603949cbe9a7028/arxiv-3.0.0.tar.gz", hash = "sha256:c8cb0d31208afbc1ceb17bd3f9816c8d4c5ca1e0abf199d211e216715440498d", size = 67344, upload-time = "2026-04-12T22:48:59.623Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/9d/0d/bb2ef604e5548ba73ba6326576908d8285ebf3468b02b86af83381c7c973/arxiv-3.0.0-py3-none-any.whl", hash = "sha256:8b4d4e2e336bfeb71ea653623d7dadb260f682f0475cee2aecad0560a23b34db", size = 11928, upload-time = "2026-04-12T22:48:58.44Z" },
-]
-
-[[package]]
 name = "arxivflow"
-version = "0.1.2"
+version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "arxiv" },
     { name = "google-api-python-client" },
     { name = "google-auth-oauthlib" },
     { name = "gspread" },
@@ -181,9 +167,9 @@ dependencies = [
     { name = "pymupdf" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6b/52/93c401823810185de44ceb3ad72cd57bf4f1d1fbf056b015034220b496db/arxivflow-0.1.2.tar.gz", hash = "sha256:660e20d127a121a0f96c27af9652247fd5aac158ffdf5af1f2b537da0fa39572", size = 15098, upload-time = "2026-05-08T09:34:57.803Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e2/a3/5b3b83581495af48238119078fe0ea8affe59b9f10120f1fdc75425cc9e8/arxivflow-0.2.0.tar.gz", hash = "sha256:6a3c99125bb6e4348e3baf4208263fc72fafca010a09256936043a82860d5785", size = 17029, upload-time = "2026-05-13T13:04:19.674Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/88/82/60f31cec171dbc576bb03ab78bd221af0169d6bdfe262f357ed5a8b23f76/arxivflow-0.1.2-py3-none-any.whl", hash = "sha256:042b04ea0a58a24ca237614bad0e7f0c8b29164bfaac6919db45a483ce574c49", size = 12126, upload-time = "2026-05-08T09:34:56.406Z" },
+    { url = "https://files.pythonhosted.org/packages/f7/03/cc300002167d3f197c9c6a11a31a77935175fd14e353e8660b4e3c26c124/arxivflow-0.2.0-py3-none-any.whl", hash = "sha256:c9aa5143043e633def0a010d6acdabe8334b99047588eb4bca3250d9becf79fc", size = 14384, upload-time = "2026-05-13T13:04:18.537Z" },
 ]
 
 [[package]]
@@ -434,18 +420,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/5d/45/c130091c2dfa061bbfe3150f2a5091ef1adf149f2a8d2ae769ecaf6e99a2/fastapi-0.136.1.tar.gz", hash = "sha256:7af665ad7acfa0a3baf8983d393b6b471b9da10ede59c60045f49fbc89a0fa7f", size = 397448, upload-time = "2026-04-23T16:49:44.046Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5a/ff/2e4eca3ade2c22fe1dea7043b8ee9dabe47753349eb1b56a202de8af6349/fastapi-0.136.1-py3-none-any.whl", hash = "sha256:a6e9d7eeada96c93a4d69cb03836b44fa34e2854accb7244a1ece36cd4781c3f", size = 117683, upload-time = "2026-04-23T16:49:42.437Z" },
-]
-
-[[package]]
-name = "feedparser"
-version = "6.0.12"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "sgmllib3k" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/dc/79/db7edb5e77d6dfbc54d7d9df72828be4318275b2e580549ff45a962f6461/feedparser-6.0.12.tar.gz", hash = "sha256:64f76ce90ae3e8ef5d1ede0f8d3b50ce26bcce71dd8ae5e82b1cd2d4a5f94228", size = 286579, upload-time = "2025-09-10T13:33:59.486Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/4e/eb/c96d64137e29ae17d83ad2552470bafe3a7a915e85434d9942077d7fd011/feedparser-6.0.12-py3-none-any.whl", hash = "sha256:6bbff10f5a52662c00a2e3f86a38928c37c48f77b3c511aedcd51de933549324", size = 81480, upload-time = "2025-09-10T13:33:58.022Z" },
 ]
 
 [[package]]
@@ -1222,7 +1196,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "arxivflow", specifier = ">=0.1.1" },
+    { name = "arxivflow", specifier = ">=0.1.2" },
     { name = "google-adk", specifier = ">=1.32.0" },
     { name = "pandas", specifier = ">=3.0.2" },
 ]
@@ -2322,12 +2296,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/20/53/7c7e784abfa500a2b6b583b147ee4bb5a2b3747a9166bab52fec4b5b5e7d/rpds_py-0.30.0-cp314-cp314t-win32.whl", hash = "sha256:dc824125c72246d924f7f796b4f63c1e9dc810c7d9e2355864b3c3a73d59ade0", size = 211570, upload-time = "2025-11-30T20:24:12.735Z" },
     { url = "https://files.pythonhosted.org/packages/d0/02/fa464cdfbe6b26e0600b62c528b72d8608f5cc49f96b8d6e38c95d60c676/rpds_py-0.30.0-cp314-cp314t-win_amd64.whl", hash = "sha256:27f4b0e92de5bfbc6f86e43959e6edd1425c33b5e69aab0984a72047f2bcf1e3", size = 226532, upload-time = "2025-11-30T20:24:14.634Z" },
 ]
-
-[[package]]
-name = "sgmllib3k"
-version = "1.0.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/9e/bd/3704a8c3e0942d711c1299ebf7b9091930adae6675d7c8f476a7ce48653c/sgmllib3k-1.0.0.tar.gz", hash = "sha256:7868fb1c8bfa764c1ac563d3cf369c381d1325d36124933a726f29fcdaa812e9", size = 5750, upload-time = "2010-08-24T14:33:52.445Z" }
 
 [[package]]
 name = "six"

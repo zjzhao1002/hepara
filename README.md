@@ -5,22 +5,29 @@
 [![Model](https://img.shields.io/badge/model-gemini--2.5--flash-purple.svg)](https://deepmind.google/technologies/gemini/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**HEPARA** (High Energy Physics AI Research Assistant) is a specialized research companion designed for physicists working in High Energy Physics. Built on the **Google Agent Development Kit (ADK)** and powered by **Gemini 2.5 Flash**, HEPARA automates the tedious parts of literature tracking and citation monitoring.
+**HEPARA** (High Energy Physics AI Research Assistant) is a specialized research companion designed for physicists working in High Energy Physics. Built on the **Google Agent Development Kit (ADK)** and powered by **Gemini 2.5 Flash**, HEPARA automates literature tracking, citation monitoring, and trend analysis.
 
 ---
 
 ## 🚀 Features
 
--   **📊 Citation Tracking & Search:** Monitor your own citation counts and search for literature directly on INSPIRE-HEP using the integrated `inspirehep_agent`.
--   **📑 arXiv Monitoring:** Stay up-to-date with the latest papers in specific HEP categories (e.g., hep-ph, hep-th) and discover trending topics via the `arxiv_agent`.
--   **🤖 Multi-Agent Architecture:** Powered by a coordinator agent that orchestrates specialized sub-agents (`arxiv_agent`, `inspirehep_agent`) for different research tasks.
+-   **📊 Citation Monitoring & Analysis:** 
+    -   Track your own citation counts and get notified of new citations or publications via `track_citations_updates`.
+    -   Fetch detailed citation metrics for any author on INSPIRE-HEP.
+    -   Analyze citation graphs: explore what a paper cites (references) or what papers cite it.
+-   **📑 arXiv Intelligence:**
+    -   Search for papers on arXiv with advanced query support.
+    -   **PDF Downloading:** Directly download paper PDFs to your local machine.
+    -   **Trending Recommendations:** Discover the latest papers based on trending topics in your field (powered by `arxivflow`).
+-   **🤖 Intelligent Coordination:** A root agent orchestrates specialized sub-agents (`arxiv_agent`, `inspirehep_agent`) to provide seamless answers to complex research queries.
 
 ## 🛠️ Tech Stack
 
--   **Core:** [Google Agent Development Kit (ADK)](https://github.com/google/adk)
+-   **Framework:** [Google Agent Development Kit (ADK)](https://github.com/google/adk)
 -   **Model:** Google Gemini 2.5 Flash
--   **Package Manager:** [uv](https://github.com/astral-sh/uv)
+-   **Keyword Extraction:** [arXivFlow](https://github.com/zjzhao1002/arxivflow) (requires Ollama)
 -   **Data Sources:** INSPIRE-HEP API, arXiv API
+-   **Environment:** Python 3.13+, [uv](https://github.com/astral-sh/uv)
 
 ---
 
@@ -76,8 +83,9 @@ Upon startup, HEPARA will:
 ### Example Queries
 
 -   *"What are the trending topics in hep-ph this week?"*
--   *"Can you recommend some papers on 'Dark Matter'?"*
--   *"Have I received any new citations recently?"*
+-   *"Download the PDF for arXiv:2301.00001"*
+-   *"Who is citing my latest paper?"*
+-   *"Find papers on 'Dark Matter' published in the last month."*
 
 ---
 
@@ -87,11 +95,12 @@ Upon startup, HEPARA will:
 ├── hepara/
 │   ├── agent.py           # Root Coordinator Agent
 │   ├── subagents/
-│   │   ├── arxiv_agent/       # arXiv monitoring and trends
-│   │   └── inspirehep_agent/  # INSPIRE-HEP citation tracking and search
+│   │   ├── arxiv_agent/       # arXiv search, PDF download, and trends
+│   │   └── inspirehep_agent/  # INSPIRE-HEP citation tracking and graph analysis
 ├── main.py                # Entry point (CLI)
 ├── pyproject.toml         # Dependencies and project metadata
-└── README.md              # This file
+├── README.md              # This file
+└── GEMINI.md              # Project internal documentation
 ```
 
 ---

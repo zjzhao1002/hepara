@@ -14,7 +14,7 @@ async def _fetch_literature(params: dict) -> dict:
         response.raise_for_status()
         return response.json()
     
-async def _search_papers(query: str, sort: str="mostrecent", page_size: int=DEFAULT_PAGE_SIZE, page: int=1) -> dict:
+async def search_papers(query: str, sort: str="mostrecent", page_size: int=DEFAULT_PAGE_SIZE, page: int=1) -> dict:
     """
     Searches for papers on INSPIRE-HEP.
 
@@ -72,7 +72,7 @@ async def get_paper_citations(query: str, direction: Literal["citing", "cited_by
     if direction not in valid_directions:
         return {'Error': f"Invalid direction {direction}. The direction must be one of: {','.join(valid_directions)}"}
     
-    data = await _search_papers(query=query)
+    data = await search_papers(query=query)
 
     if 'Papers' not in data or not isinstance(data['Papers'], list) or not data['Papers']:
         return {'Error': f"Could not find any paper by query: {query}"}
