@@ -25,7 +25,7 @@
 ## 🛠️ Tech Stack
 
 -   **Framework:** [Google Agent Development Kit (ADK)](https://github.com/google/adk)
--   **Model:** Google Gemini 2.5 Flash
+-   **Model:** Google Gemini (configurable, defaults to `gemini-2.5-flash`)
 -   **Keyword Extraction:** [arXivFlow](https://github.com/zjzhao1002/arxivflow) (requires Ollama)
 -   **Data Sources:** INSPIRE-HEP API, arXiv API
 -   **Environment:** Python 3.13+, [uv](https://github.com/astral-sh/uv)
@@ -58,6 +58,9 @@
     ```env
     # Gemini API Key
     GOOGLE_API_KEY=your_api_key_here
+
+    # Gemini Model (Optional, defaults to "gemini-2.5-flash")
+    GOOGLE_MODEL="gemini-2.5-flash"
 
     # User Configuration
     AUTHOR="your name" # To get accurate results, the INSPIRE-HEP author identifier is recommended. 
