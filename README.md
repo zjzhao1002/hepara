@@ -54,7 +54,7 @@
     ```
 
 3.  **Configure environment variables:**
-    Create a `.env` file in the root directory:
+    You can create a `.env` file manually in the root directory, or launch the Streamlit app and save these values from the sidebar:
     ```env
     # Gemini API Key
     GOOGLE_API_KEY=your_api_key_here
@@ -73,7 +73,27 @@
 
 ## 🏃 Usage
 
-Launch the interactive assistant:
+### Streamlit Web App
+
+Launch the chat UI:
+
+```bash
+uv run streamlit run streamlit_app.py
+```
+
+The Streamlit app provides:
+
+-   A main chat interface for talking with the HEPARA agent.
+-   Markdown-rendered assistant responses via Streamlit.
+-   A sidebar for setting and saving environment variables to `.env`.
+-   Dropdown selectors for `GOOGLE_MODEL` and `OLLAMA_MODEL`, including custom model values.
+-   A manual **Check citation updates** button, so citation tracking only runs when requested.
+
+After changing sidebar settings, click **Save configuration** before chatting so the app reloads the agent with the selected environment and model values.
+
+### CLI
+
+Launch the terminal assistant:
 
 ```bash
 uv run main.py
@@ -81,7 +101,7 @@ uv run main.py
 
 Upon startup, HEPARA will:
 1.  Initialize your research session.
-2.  Automatically check for new citations for the configured \`AUTHOR\`.
+2.  Automatically check for new citations for the configured `AUTHOR`.
 3.  Ready itself for your questions about recent papers, trends, or literature searches.
 
 ### Example Queries
@@ -102,9 +122,9 @@ Upon startup, HEPARA will:
 │   │   ├── arxiv_agent/       # arXiv search, PDF download, and trends
 │   │   └── inspirehep_agent/  # INSPIRE-HEP citation tracking and graph analysis
 ├── main.py                # Entry point (CLI)
+├── streamlit_app.py       # Entry point (Streamlit web app)
 ├── pyproject.toml         # Dependencies and project metadata
-├── README.md              # This file
-└── GEMINI.md              # Project internal documentation
+└── README.md              # This file
 ```
 
 ---

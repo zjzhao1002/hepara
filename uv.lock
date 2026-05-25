@@ -1250,6 +1250,7 @@ dependencies = [
     { name = "arxivflow" },
     { name = "google-adk" },
     { name = "pandas" },
+    { name = "python-dotenv" },
     { name = "streamlit" },
 ]
 
@@ -1258,6 +1259,7 @@ requires-dist = [
     { name = "arxivflow", specifier = ">=0.2.0" },
     { name = "google-adk", specifier = ">=1.32.0" },
     { name = "pandas", specifier = ">=3.0.2" },
+    { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "streamlit", specifier = ">=1.57.0" },
 ]
 
