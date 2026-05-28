@@ -2,7 +2,9 @@ import asyncio
 import importlib
 import json
 import os
+import tempfile
 import threading
+from pathlib import Path
 from typing import Any
 
 import streamlit as st
@@ -21,22 +23,13 @@ GOOGLE_MODEL_OPTIONS = [
     "gemini-1.5-flash",
 ]
 
-OLLAMA_MODEL_OPTIONS = [
-    "llama3",
-    "llama3.1",
-    "llama3.2",
-    "qwen2.5",
-    "mistral",
-    "gemma2",
-    "deepseek-r1",
-]
-
 CONFIG_KEYS = (
     "GOOGLE_API_KEY",
     "AUTHOR",
     "CATEGORIES",
     "GOOGLE_MODEL",
-    "OLLAMA_MODEL",
+    "PDF_PATH",
+    "ARXIVFLOW_KEYWORD_BACKEND",
 )
 
 
@@ -65,12 +58,17 @@ def run_async(coro: Any) -> Any:
 
 
 def load_initial_environment() -> None:
+    st.session_state.setdefault(
+        "cloud_pdf_path",
+        tempfile.mkdtemp(prefix="hepara_streamlit_pdfs_"),
+    )
     defaults = {
         "GOOGLE_API_KEY": "",
         "AUTHOR": "",
         "CATEGORIES": "",
         "GOOGLE_MODEL": "gemini-2.5-flash",
-        "OLLAMA_MODEL": "llama3",
+        "PDF_PATH": st.session_state.cloud_pdf_path,
+        "ARXIVFLOW_KEYWORD_BACKEND": "gemini",
     }
     for key, default in defaults.items():
         secret_value = get_streamlit_secret(key)
@@ -99,7 +97,8 @@ def current_config() -> dict[str, str]:
         "AUTHOR": st.session_state.get("config_AUTHOR", "").strip(),
         "CATEGORIES": st.session_state.get("config_CATEGORIES", "").strip(),
         "GOOGLE_MODEL": st.session_state.get("config_GOOGLE_MODEL", "").strip() or "gemini-2.5-flash",
-        "OLLAMA_MODEL": st.session_state.get("config_OLLAMA_MODEL", "").strip(),
+        "PDF_PATH": st.session_state.get("config_PDF_PATH", st.session_state.cloud_pdf_path),
+        "ARXIVFLOW_KEYWORD_BACKEND": "gemini",
     }
 
 
@@ -195,6 +194,27 @@ def run_citation_update() -> str:
     return citation_update_markdown(update)
 
 
+def render_pdf_downloads(pdf_path: str) -> None:
+    pdf_dir = Path(pdf_path)
+    if not pdf_dir.exists():
+        return
+
+    pdf_files = sorted(pdf_dir.glob("*.pdf"), key=lambda path: path.stat().st_mtime, reverse=True)
+    if not pdf_files:
+        return
+
+    st.divider()
+    st.subheader("PDF downloads")
+    for pdf_file in pdf_files:
+        st.download_button(
+            label=f"Download {pdf_file.name}",
+            data=pdf_file.read_bytes(),
+            file_name=pdf_file.name,
+            mime="application/pdf",
+            key=f"download_pdf_{pdf_file.name}_{pdf_file.stat().st_mtime_ns}",
+        )
+
+
 def render_sidebar() -> dict[str, str]:
     st.sidebar.header("Configuration")
 
@@ -222,17 +242,6 @@ def render_sidebar() -> dict[str, str]:
             value="" if google_model_current in GOOGLE_MODEL_OPTIONS else google_model_current,
         )
 
-        ollama_model_current = st.session_state.get("config_OLLAMA_MODEL", "llama3")
-        ollama_choice = st.selectbox(
-            "OLLAMA_MODEL",
-            OLLAMA_MODEL_OPTIONS + ["Custom"],
-            index=option_index(OLLAMA_MODEL_OPTIONS, ollama_model_current),
-        )
-        ollama_custom = st.text_input(
-            "Custom OLLAMA_MODEL",
-            value="" if ollama_model_current in OLLAMA_MODEL_OPTIONS else ollama_model_current,
-        )
-
         applied = st.form_submit_button("Apply configuration", use_container_width=True)
 
     if applied:
@@ -244,11 +253,8 @@ def render_sidebar() -> dict[str, str]:
             google_choice,
             google_custom,
         )
-        st.session_state.config_OLLAMA_MODEL = model_value(
-            OLLAMA_MODEL_OPTIONS,
-            ollama_choice,
-            ollama_custom,
-        )
+        st.session_state.config_PDF_PATH = st.session_state.cloud_pdf_path # type: ignore
+        st.session_state.config_ARXIVFLOW_KEYWORD_BACKEND = "gemini" # type: ignore
         config = current_config()
         apply_environment(config)
         st.session_state.pop("runner_signature", None)
@@ -290,6 +296,7 @@ def main() -> None:
 
     prompt = st.chat_input("Ask about papers, citations, trends, or arXiv downloads")
     if not prompt:
+        render_pdf_downloads(config["PDF_PATH"])
         return
 
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -305,6 +312,7 @@ def main() -> None:
             st.markdown(response)
 
     st.session_state.messages.append({"role": "assistant", "content": response})
+    render_pdf_downloads(config["PDF_PATH"])
 
 
 if __name__ == "__main__":

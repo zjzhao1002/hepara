@@ -40,6 +40,7 @@ CONFIG_KEYS = (
     "GOOGLE_MODEL",
     "OLLAMA_MODEL",
     "PDF_PATH",
+    "ARXIVFLOW_KEYWORD_BACKEND",
 )
 
 
@@ -76,6 +77,7 @@ def load_initial_environment() -> None:
         "GOOGLE_MODEL": "gemini-2.5-flash",
         "OLLAMA_MODEL": "llama3",
         "PDF_PATH": "./pdf/",
+        "ARXIVFLOW_KEYWORD_BACKEND": "ollama",
     }
     for key, default in defaults.items():
         st.session_state.setdefault(f"config_{key}", os.getenv(key, default))
@@ -97,6 +99,7 @@ def current_config() -> dict[str, str]:
         "GOOGLE_MODEL": st.session_state.get("config_GOOGLE_MODEL", "").strip() or "gemini-2.5-flash",
         "OLLAMA_MODEL": st.session_state.get("config_OLLAMA_MODEL", "").strip(),
         "PDF_PATH": st.session_state.get("config_PDF_PATH", "").strip() or "./pdf/",
+        "ARXIVFLOW_KEYWORD_BACKEND": "ollama",
     }
 
 

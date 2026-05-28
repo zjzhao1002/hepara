@@ -9,7 +9,10 @@ from collections import Counter
 
 CATEGORIES = os.getenv("CATEGORIES")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL")
+GOOGLE_MODEL = os.getenv("GOOGLE_MODEL")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 PDF_PATH = os.getenv("PDF_PATH")
+ARXIVFLOW_KEYWORD_BACKEND = os.getenv("ARXIVFLOW_KEYWORD_BACKEND", "ollama").lower()
 
 BASE_URL = "https://export.arxiv.org/api/query"
 ARXIV_NS = {
@@ -227,14 +230,41 @@ async def recommend_by_trends(max_results: int=100) -> dict:
     Recommends latest papers based on trending topics in the last week.
     It finds the most frequent keywords in the latest papers and recommends papers matching those keywords.
     """
-    if not CATEGORIES or not OLLAMA_MODEL:
-        return {"error": "Error: One or more required environment variables (CATEGORIES, OLLAMA_MODEL) not set in .env file."}
-    
+    if not CATEGORIES:
+        return {"error": "Error: Required environment variable CATEGORIES is not set."}
+
+    backend = ARXIVFLOW_KEYWORD_BACKEND or "ollama"
+    if backend not in {"ollama", "gemini"}:
+        return {"error": "Error: ARXIVFLOW_KEYWORD_BACKEND must be either 'ollama' or 'gemini'."}
+
     categories = [cat.strip() for cat in CATEGORIES.split(',') if cat.strip()]
+    if not categories:
+        return {"error": "Error: Required environment variable CATEGORIES does not contain any valid arXiv categories."}
+
+    flow_kwargs: dict[str, Any] = {
+        "categories": categories,
+        "max_results": max_results,
+    }
+
+    if backend == "ollama":
+        if not OLLAMA_MODEL:
+            return {"error": "Error: Required environment variable OLLAMA_MODEL is not set for Ollama keyword extraction."}
+        flow_kwargs["ollama_model"] = OLLAMA_MODEL
+    else:
+        if not GOOGLE_MODEL or not GOOGLE_API_KEY:
+            return {"error": "Error: Required environment variables GOOGLE_MODEL and GOOGLE_API_KEY are not set for Gemini keyword extraction."}
+        flow_kwargs["gemini_model"] = GOOGLE_MODEL
+        flow_kwargs["gemini_api_key"] = GOOGLE_API_KEY
+
     # Initialize arXivFlow and fetch data
-    flow = arXivFlow(categories=categories, ollama_model=OLLAMA_MODEL, max_results=max_results)
+    flow = arXivFlow(**flow_kwargs)
     # flow.set_client_parameters(delay_seconds=3.0, num_retries=3)
-    df = await flow.get_arxiv_data(download_pdfs=False)
+    try:
+        df = await flow.get_arxiv_data(download_pdfs=False)
+    finally:
+        close = getattr(flow, "close", None)
+        if close is not None:
+            await close()
 
     if df is None or df.empty:
         return {"error": "Error:No papers found for the specified categories."}
