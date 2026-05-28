@@ -39,6 +39,7 @@ CONFIG_KEYS = (
     "CATEGORIES",
     "GOOGLE_MODEL",
     "OLLAMA_MODEL",
+    "PDF_PATH",
 )
 
 
@@ -74,6 +75,7 @@ def load_initial_environment() -> None:
         "CATEGORIES": "",
         "GOOGLE_MODEL": "gemini-2.5-flash",
         "OLLAMA_MODEL": "llama3",
+        "PDF_PATH": "./pdf/",
     }
     for key, default in defaults.items():
         st.session_state.setdefault(f"config_{key}", os.getenv(key, default))
@@ -94,6 +96,7 @@ def current_config() -> dict[str, str]:
         "CATEGORIES": st.session_state.get("config_CATEGORIES", "").strip(),
         "GOOGLE_MODEL": st.session_state.get("config_GOOGLE_MODEL", "").strip() or "gemini-2.5-flash",
         "OLLAMA_MODEL": st.session_state.get("config_OLLAMA_MODEL", "").strip(),
+        "PDF_PATH": st.session_state.get("config_PDF_PATH", "").strip() or "./pdf/",
     }
 
 
@@ -210,6 +213,11 @@ def render_sidebar() -> dict[str, str]:
             value=st.session_state.get("config_CATEGORIES", ""),
             placeholder="hep-ph, hep-th",
         )
+        pdf_path = st.text_input(
+            "PDF_PATH",
+            value=st.session_state.get("config_PDF_PATH", "./pdf/"),
+            placeholder="./pdf/",
+        )
 
         google_model_current = st.session_state.get("config_GOOGLE_MODEL", "gemini-2.5-flash")
         google_choice = st.selectbox(
@@ -239,6 +247,7 @@ def render_sidebar() -> dict[str, str]:
         st.session_state.config_GOOGLE_API_KEY = google_api_key.strip() # type: ignore
         st.session_state.config_AUTHOR = author.strip() # type: ignore
         st.session_state.config_CATEGORIES = categories.strip() # type: ignore
+        st.session_state.config_PDF_PATH = pdf_path.strip() or "./pdf/" # type: ignore
         st.session_state.config_GOOGLE_MODEL = model_value(
             GOOGLE_MODEL_OPTIONS,
             google_choice,

@@ -35,6 +35,7 @@ ENV/
 **/.antigravitycli/
 hepara/subagents/**/*_record.json
 .python-version
+pdf/
 
 # Python development
 .pytest_cache/

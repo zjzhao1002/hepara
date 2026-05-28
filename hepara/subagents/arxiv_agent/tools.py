@@ -9,6 +9,7 @@ from collections import Counter
 
 CATEGORIES = os.getenv("CATEGORIES")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL")
+PDF_PATH = os.getenv("PDF_PATH")
 
 BASE_URL = "https://export.arxiv.org/api/query"
 ARXIV_NS = {
@@ -167,7 +168,7 @@ def _parse_arxiv_atom_response(text: str) -> List[Dict[str, Any]]:
 
 async def download_pdf(
         arxiv_id: str,
-        dirpath: str = "./",
+        dirpath: Optional[str] = PDF_PATH,
         filename: str = ""
     ) -> str:
     """
@@ -184,6 +185,9 @@ async def download_pdf(
     pdf_url = results[0].get("PDF URL")
     if not pdf_url:
         raise ValueError(f"No PDF URL found for arXiv ID: {arxiv_id}")
+    
+    if not dirpath:
+        dirpath = "./pdf/"
 
     if not filename:
         filename = f"{arxiv_id}.pdf"
