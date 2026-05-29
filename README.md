@@ -78,6 +78,14 @@
 
 ## 🏃 Usage
 
+### Hosted App
+
+Try the deployed Streamlit Community Cloud app:
+
+```text
+https://hepara.streamlit.app/
+```
+
 ### Local Streamlit Web App
 
 Launch the local chat UI:
@@ -99,7 +107,7 @@ After changing sidebar settings, click **Save configuration** before chatting so
 
 ### Streamlit Community Cloud App
 
-Use the cloud entry point when deploying to Streamlit Community Cloud:
+The hosted app is available at <https://hepara.streamlit.app/>. Use the cloud entry point when deploying your own Streamlit Community Cloud instance:
 
 ```bash
 streamlit run streamlit_app_cloud.py
