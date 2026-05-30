@@ -80,11 +80,7 @@
 
 ### Hosted App
 
-Try the deployed Streamlit Community Cloud app:
-
-```text
-https://hepara.streamlit.app/
-```
+Try the deployed Streamlit Community Cloud app: <https://hepara.streamlit.app/>.
 
 ### Local Streamlit Web App
 
