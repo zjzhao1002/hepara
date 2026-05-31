@@ -36,10 +36,10 @@
 
 ### Prerequisites
 
--   Python 3.13 or higher
--   [uv](https://github.com/astral-sh/uv) installed
 -   A Google Gemini API Key
--   [Ollama](https://ollama.ai/) for local trend recommendations, unless you switch arXivFlow to Gemini
+-   [Docker](https://www.docker.com/) for the containerized local app
+-   Python 3.13 or higher and [uv](https://github.com/astral-sh/uv) for source-based local runs
+-   [Ollama](https://ollama.ai/) for source-based local trend recommendations, unless you switch arXivFlow to Gemini
 
 ### Setup
 
@@ -81,6 +81,52 @@
 ### Hosted App
 
 Try the deployed Streamlit Community Cloud app: <https://hepara.streamlit.app/>.
+
+### Docker Local App
+
+The local Streamlit app is available as a Docker image at <https://hub.docker.com/r/zjzhao1002/hepara>. The container includes the Python app and Ollama, so users only need Docker installed.
+
+Pull the image:
+
+```bash
+docker pull zjzhao1002/hepara:latest
+```
+
+Run the app:
+
+```bash
+docker run --rm -p 8501:8501 -p 11434:11434 \
+  -v hepara-data:/app/data \
+  -v hepara-ollama:/root/.ollama \
+  zjzhao1002/hepara:latest
+```
+
+Open <http://localhost:8501>, enter your `GOOGLE_API_KEY`, `AUTHOR`, `CATEGORIES`, and model settings in the sidebar, then click **Save configuration**. The first startup can take a while because the container starts Ollama and downloads the default `llama3` model if it is not already present in the `hepara-ollama` volume.
+
+The Docker volumes preserve local state across container restarts:
+
+-   `hepara-data` stores the saved `.env`, citation record, and downloaded PDFs under `/app/data/pdf`.
+-   `hepara-ollama` stores downloaded Ollama models under `/root/.ollama`.
+
+To use a different Ollama model:
+
+```bash
+docker run --rm -p 8501:8501 -p 11434:11434 \
+  -v hepara-data:/app/data \
+  -v hepara-ollama:/root/.ollama \
+  -e OLLAMA_MODEL=qwen2.5 \
+  zjzhao1002/hepara:latest
+```
+
+To build the image from source instead:
+
+```bash
+docker build -t hepara-local .
+docker run --rm -p 8501:8501 -p 11434:11434 \
+  -v hepara-data:/app/data \
+  -v hepara-ollama:/root/.ollama \
+  hepara-local
+```
 
 ### Local Streamlit Web App
 
@@ -153,6 +199,8 @@ Upon startup, HEPARA will:
 ├── main.py                # Entry point (CLI)
 ├── streamlit_app_local.py # Entry point (local Streamlit web app)
 ├── streamlit_app_cloud.py # Entry point (Streamlit Community Cloud app)
+├── Dockerfile             # Containerized local Streamlit + Ollama app
+├── docker/                # Container startup scripts
 ├── pyproject.toml         # Dependencies and project metadata
 └── README.md              # This file
 ```
