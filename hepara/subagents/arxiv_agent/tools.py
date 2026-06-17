@@ -60,7 +60,7 @@ async def search_papers(query: str,
 
     response = await _rate_limit_request(client=client, url=BASE_URL, params=params)
     return _parse_arxiv_atom_response(response.text)
-    
+
 async def _rate_limit_request(client: httpx.AsyncClient, url: str, params: Optional[Dict] = None) -> httpx.Response:
     global _last_request_time
 
@@ -97,7 +97,7 @@ async def _rate_limit_request(client: httpx.AsyncClient, url: str, params: Optio
                     raise
 
     raise RuntimeError("arXiv request failed after retries.")
-    
+
 def _parse_arxiv_atom_response(text: str) -> List[Dict[str, Any]]:
     results = []
 
@@ -194,6 +194,8 @@ async def download_pdf(
     if not dirpath:
         dirpath = "./pdf/"
 
+    Path(dirpath).mkdir(parents=True, exist_ok=True)
+
     if not filename:
         filename = f"{arxiv_id}.pdf"
         if not filename.endswith(".pdf"):
@@ -208,14 +210,18 @@ async def download_pdf(
         f.write(response.content)
 
     try:
-        markdown = pymupdf4llm.to_markdown(path, show_progress=False)
-        markdown_path = Path(path).with_suffix(".md")
-        with open(markdown_path, 'w', encoding='utf-8') as f:
-            f.write(markdown) # type: ignore
+        _extract_markdown(Path(path))
     except Exception as e:
         print(f"Downloaded PDF to {path}, but failed to convert it to Markdown: {e}")
 
     return path
+
+def _extract_markdown(pdf_path: Path) -> Path:
+    markdown = pymupdf4llm.to_markdown(str(pdf_path), show_progress=False)
+    markdown_path = pdf_path.with_suffix(".md")
+    with open(markdown_path, 'w', encoding='utf-8') as f:
+        f.write(markdown) # type: ignore
+    return markdown_path
 
 def _calculate_relevance(row_keywords: str | list[str], search_keywords: list[str]) -> int:
     """
@@ -347,3 +353,40 @@ def list_papers()->dict:
         "papers": papers
     }
 
+async def read_paper(arxiv_id: str)->str:
+    paper_dict = list_papers()
+    if PDF_PATH:
+        papers_path = Path(PDF_PATH)
+    else:
+        papers_path = Path(paper_dict['paper_path'])
+
+    if not papers_path:
+        return "Error: Cannot find the path to store papers."
+
+    paper_ids = paper_dict['papers']
+
+    if arxiv_id not in paper_ids:
+        # If paper does not exist, try to download it.
+        pdf_path = await download_pdf(arxiv_id=arxiv_id, dirpath=str(papers_path), filename=f"{arxiv_id}.pdf")
+        markdown_path = Path(pdf_path).with_suffix(".md")
+        if not markdown_path.exists():
+            try:
+                markdown_path = _extract_markdown(Path(pdf_path))
+            except Exception as e:
+                return f"Error: Downloaded PDF to {pdf_path}, but failed to convert it to Markdown: {e}"
+    else:
+        pdf_path = papers_path/f"{arxiv_id}.pdf"
+        markdown_path = papers_path/f"{arxiv_id}.md"
+        if not markdown_path.exists():
+            try:
+                markdown_path = _extract_markdown(pdf_path)
+            except Exception as e:
+                return f"Error: Found stored PDF at {pdf_path}, but failed to convert it to Markdown: {e}"
+
+    if not markdown_path.exists():
+        return f"Error: Markdown content was not generated for arXiv ID {arxiv_id}."
+
+    content = markdown_path.read_text(
+        encoding="utf-8"
+    )
+    return content
