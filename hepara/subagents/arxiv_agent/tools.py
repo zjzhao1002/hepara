@@ -8,6 +8,9 @@ from arxivflow import arXivFlow
 from collections import Counter
 from pathlib import Path
 import pymupdf4llm 
+import chromadb
+from chromadb.utils import embedding_functions
+from langchain_text_splitters import MarkdownHeaderTextSplitter
 
 CATEGORIES = os.getenv("CATEGORIES")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL")
@@ -191,6 +194,14 @@ async def download_pdf(
     if not pdf_url:
         raise ValueError(f"No PDF URL found for arXiv ID: {arxiv_id}")
     
+    metadata = {
+        "arXiv ID": arxiv_id
+    }
+
+    authors = results[0].get("Authors")
+    if authors:
+        metadata["Authors"] = authors
+    
     if not dirpath:
         dirpath = "./pdf/"
 
@@ -210,9 +221,15 @@ async def download_pdf(
         f.write(response.content)
 
     try:
-        _extract_markdown(Path(path))
+        markdown_path = _extract_markdown(Path(path))
     except Exception as e:
         print(f"Downloaded PDF to {path}, but failed to convert it to Markdown: {e}")
+    else:
+        raw_text = _get_md_raw_text(markdown_path)
+        try:
+            _add_to_chromadb(raw_text, metadata, dirpath)
+        except Exception as e:
+            print(f"Downloaded PDF to {path} and converted it to Markdown at {markdown_path}, but failed to add it to Chroma DB: {e}")
 
     return path
 
@@ -222,6 +239,13 @@ def _extract_markdown(pdf_path: Path) -> Path:
     with open(markdown_path, 'w', encoding='utf-8') as f:
         f.write(markdown) # type: ignore
     return markdown_path
+
+def _get_md_raw_text(markdown_path: Path) -> str:
+    if markdown_path.suffix != ".md":
+        return ""
+    else:
+        content = markdown_path.read_text(encoding="utf-8")
+        return content
 
 def _calculate_relevance(row_keywords: str | list[str], search_keywords: list[str]) -> int:
     """
@@ -390,3 +414,63 @@ async def read_paper(arxiv_id: str)->str:
         encoding="utf-8"
     )
     return content
+
+def _markdown_text_splitter(raw_text: str) -> List:
+    headers_to_split_on = [
+        ("#", "Header_1"),
+        ("##", "Header_2"),
+        ("###", "Header_3"),
+    ]
+
+    markdown_splitter = MarkdownHeaderTextSplitter(
+        headers_to_split_on=headers_to_split_on,
+        strip_headers=False
+    )
+
+    chunks = markdown_splitter.split_text(raw_text)
+    return chunks
+
+def _add_to_chromadb(markdown: str, metadata: Dict, path: Optional[str]) -> str:
+    if path:
+        db_path = str(Path(path) / "chroma_db")
+    else:
+        db_path = "./chroma_db"
+
+    client = chromadb.PersistentClient(path=db_path)
+
+    gemini_embedding = embedding_functions.GoogleGeminiEmbeddingFunction(
+        model_name = "gemini-embedding-001",
+        api_key_env_var="GOOGLE_API_KEY"
+    )
+
+    collection = client.get_or_create_collection(
+        name = "arxiv_papers",
+        embedding_function=gemini_embedding # type: ignore
+    )
+
+    documents = []
+    metadatas = []
+    ids = []
+
+    if not markdown:
+        return "Error: No markdown or markdown content is empty."
+    
+    chunks = _markdown_text_splitter(markdown)
+    for idx, chunk in enumerate(chunks):
+        documents.append(chunk.page_content)
+
+        chunk_metadata = metadata | (chunk.metadata or {})
+        metadatas.append(chunk_metadata)
+
+        if chunk_metadata["arXiv ID"]:
+            ids.append(f"{chunk_metadata["arXiv ID"]}_chunk_{idx}")
+        else:
+            raise ValueError(f"No valid arXiv ID")
+        
+    collection.upsert(
+        ids=ids,
+        documents=documents,
+        metadatas=metadatas,
+    )
+
+    return f"Success: Write data of {metadata["arXiv ID"]} to chroma database."

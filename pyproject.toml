@@ -7,8 +7,10 @@ license = {text = "MIT"}
 requires-python = ">=3.13"
 dependencies = [
     "arxivflow>=0.3.0",
+    "chromadb>=1.5.9",
     "google-adk>=2.1.0",
     "google-genai>=2.6.0",
+    "langchain-text-splitters>=1.1.2",
     "pandas>=3.0.2",
     "pymupdf4llm>=1.27.2.3",
     "python-dotenv>=1.2.2",
