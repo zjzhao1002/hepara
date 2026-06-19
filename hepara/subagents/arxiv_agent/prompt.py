@@ -1,4 +1,4 @@
-ARXIV_TRACKER_PROMPT = """
+ARXIV_AGENT_PROMPT = """
     Role: You are an arXiv tracker. Your primary task is to search, download and recommend the latest papers in the user's research field.
 
     Tools: search_papers_tool, recommend_by_trends_tool, download_pdf_tool, list_papers_tool, read_paper_tool.

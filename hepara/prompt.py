@@ -32,4 +32,7 @@ HEP_COORDINATOR_PROMPT = """
 
     7. Analyze/Review/Summarize Paper
     When the user asks for analyzing, reviewing or summarizing an arXiv paper, call the arxiv_agent to do that.
+
+    8. General Questions:
+    When the user asks you a general questions, calle the faq_agent to answer it.
 """

@@ -2,7 +2,7 @@ import os
 
 AUTHOR = os.getenv("AUTHOR")
 
-CITATIONS_TRACKER_PROMPT = f"""
+INSPIREHEP_AGENT_PROMPT = f"""
     Role: You are an expert of Inspire-HEP. Your primary task is to search papers, report the current status of user's ({AUTHOR}'s) citations, 
     get the citation updates, and retrieve citation graph of a specific paper. 
 

@@ -5,7 +5,7 @@
 [![Model](https://img.shields.io/badge/model-gemini--2.5--flash-purple.svg)](https://deepmind.google/technologies/gemini/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**HEPARA** (High Energy Physics AI Research Assistant) is a specialized research companion designed for physicists working in High Energy Physics. Built on the **Google Agent Development Kit (ADK)** and powered by **Gemini 2.5 Flash**, HEPARA automates literature tracking, citation monitoring, paper analysis, and trend analysis.
+**HEPARA** (High Energy Physics AI Research Assistant) is a specialized research companion designed for physicists working in High Energy Physics. Built on the **Google Agent Development Kit (ADK)** and powered by **Gemini 2.5 Flash**, HEPARA automates literature tracking, citation monitoring, paper analysis, trend analysis, and general research Q&A.
 
 ---
 
@@ -20,8 +20,9 @@
     -   **PDF Downloading:** Directly download paper PDFs to your local machine, with best-effort Markdown extraction for easier reading and downstream analysis.
     -   **Stored Paper Listing:** List locally stored arXiv PDFs by ID from your configured download directory.
     -   **Stored Paper Analysis:** Ask HEPARA to analyze, review, or summarize a stored arXiv paper; missing Markdown sidecars are generated from the PDF when possible.
+    -   **Local Paper Q&A:** Downloaded papers are indexed into a Chroma database under `PDF_PATH/chroma_db`, so general questions can use local arXiv context before falling back to Google Search.
     -   **Trending Recommendations:** Discover the latest papers based on trending topics in your field (powered by `arxivflow`).
--   **🤖 Intelligent Coordination:** A root agent orchestrates specialized sub-agents (`arxiv_agent`, `inspirehep_agent`) to provide seamless answers to complex research queries.
+-   **🤖 Intelligent Coordination:** A root agent orchestrates specialized sub-agents (`arxiv_agent`, `inspirehep_agent`, `faq_agent`) to provide seamless answers to complex research queries.
 -   **🛡️ Robust Reliability:** Enterprise-grade rate limiting and connection pooling for arXiv/INSPIRE-HEP ensures consistent operation without IP blocking.
 
 ## 🛠️ Tech Stack
@@ -30,7 +31,8 @@
 -   **Model:** Google Gemini (configurable, defaults to `gemini-2.5-flash`)
 -   **Keyword Extraction:** [arXivFlow](https://github.com/zjzhao1002/arxivflow) with Ollama for local runs or Gemini for Streamlit Community Cloud
 -   **PDF Processing:** [PyMuPDF4LLM](https://pymupdf.readthedocs.io/en/latest/pymupdf4llm/) for Markdown extraction from downloaded PDFs
--   **Data Sources:** INSPIRE-HEP API, arXiv API
+-   **Local Retrieval:** [ChromaDB](https://www.trychroma.com/) for querying downloaded arXiv papers
+-   **Data Sources:** INSPIRE-HEP API, arXiv API, Google Search
 -   **Environment:** Python 3.13+, [uv](https://github.com/astral-sh/uv)
 
 ---
@@ -66,7 +68,7 @@ Open <http://localhost:8501>, enter your `GOOGLE_API_KEY`, `AUTHOR`, `CATEGORIES
 
 The Docker volumes preserve local state across container restarts:
 
--   `hepara-data` stores the saved `.env`, citation record, downloaded PDFs, and generated Markdown sidecars under `/app/data/pdf`.
+-   `hepara-data` stores the saved `.env`, citation record, downloaded PDFs, generated Markdown sidecars, and Chroma index under `/app/data/pdf`.
 -   `hepara-ollama` stores downloaded Ollama models under `/root/.ollama`.
 
 To use a different Ollama model:
@@ -114,7 +116,7 @@ docker run --rm -p 8501:8501 -p 11434:11434 \
     AUTHOR="your name" # To get accurate results, the INSPIRE-HEP author identifier is recommended. 
                        # It should be something like Joe.Smith.1 
     CATEGORIES="hep-ph, hep-th" # The arXiv categories you are interested in
-    PDF_PATH="./pdf/" # Local destination for downloaded arXiv PDFs and generated Markdown sidecars
+    PDF_PATH="./pdf/" # Local destination for downloaded PDFs, Markdown sidecars, and the Chroma index
 
     # arXivFlow keyword extraction for local Streamlit
     ARXIVFLOW_KEYWORD_BACKEND="ollama"
@@ -142,6 +144,7 @@ The local Streamlit app provides:
 -   Local PDF downloads saved under `PDF_PATH`, with matching `.md` sidecar files generated when extraction succeeds.
 -   Stored paper listing from the PDFs in `PDF_PATH`.
 -   Stored paper analysis and summarization from generated Markdown sidecars, with automatic sidecar generation for existing PDFs when possible.
+-   General research Q&A through `faq_agent`, which queries `PDF_PATH/chroma_db` first and uses Google Search when local context is unavailable.
 -   A manual **Check citation updates** button, so citation tracking only runs when requested.
 
 After changing sidebar settings, click **Save configuration** before chatting so the app reloads the agent with the selected environment and model values. The local app sets `ARXIVFLOW_KEYWORD_BACKEND="ollama"` automatically, so trend recommendations use the configured Ollama model.
@@ -163,7 +166,7 @@ AUTHOR = "your INSPIRE-HEP author identifier"
 CATEGORIES = "hep-ph, hep-th"
 ```
 
-The cloud app sets `ARXIVFLOW_KEYWORD_BACKEND="gemini"` automatically, does not expose Ollama settings, and uses `GOOGLE_API_KEY` directly for arXivFlow keyword extraction. PDFs generated by the `download_pdf` tool are stored in a temporary server directory and shown as in-browser download buttons so users can save them to their own device. When Markdown extraction succeeds, the app also keeps a `.md` sidecar next to the downloaded PDF for agent-side reading and paper-analysis workflows.
+The cloud app sets `ARXIVFLOW_KEYWORD_BACKEND="gemini"` automatically, does not expose Ollama settings, and uses `GOOGLE_API_KEY` directly for arXivFlow keyword extraction and Google Search fallback. PDFs generated by the `download_pdf` tool are stored in a temporary server directory and shown as in-browser download buttons so users can save them to their own device. When Markdown extraction succeeds, the app also keeps a `.md` sidecar next to the downloaded PDF and a temporary Chroma index for agent-side reading, paper-analysis, and local-context Q&A workflows.
 
 ### Local Docker Image
 
@@ -196,6 +199,8 @@ Upon startup, HEPARA will:
 -   *"Download the PDF for arXiv:2301.00001"*
 -   *"List all stored papers."*
 -   *"Summarize stored paper arXiv:2301.00001."*
+-   *"Based on my stored papers, what are the main approaches to dark matter freeze-in?"*
+-   *"What is the latest status of sterile neutrino searches?"*
 -   *"Who is citing my latest paper?"*
 -   *"Find papers on 'Dark Matter' published in the last month."*
 
@@ -208,6 +213,7 @@ Upon startup, HEPARA will:
 │   ├── agent.py           # Root Coordinator Agent
 │   ├── subagents/
 │   │   ├── arxiv_agent/       # arXiv search, PDF download/listing, paper analysis, Markdown extraction, and trends
+│   │   ├── faq_agent/         # General Q&A over local Chroma context with Google Search fallback
 │   │   └── inspirehep_agent/  # INSPIRE-HEP citation tracking and graph analysis
 ├── main.py                # Entry point (CLI)
 ├── streamlit_app_local.py # Entry point (local Streamlit web app)

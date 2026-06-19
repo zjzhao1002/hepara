@@ -1,7 +1,7 @@
 import os
 from google.adk.agents.llm_agent import Agent
 from google.adk.tools import FunctionTool
-from .prompt import CITATIONS_TRACKER_PROMPT
+from .prompt import INSPIREHEP_AGENT_PROMPT
 from .tools import get_author_citations, get_paper_citations, track_citations_updates, search_papers
 
 GOOGLE_MODEL = os.getenv("GOOGLE_MODEL") 
@@ -14,9 +14,9 @@ search_papers_tool = FunctionTool(func=search_papers)
 
 inspirehep_agent = Agent(
     model=model,
-    name='citations_tracker',
+    name='inspirehep_agent',
     description='A helpful assistant for tracking paper citations of the user and retrieving citation graphs (references or citations) for specific papers.',
-    instruction=CITATIONS_TRACKER_PROMPT,
+    instruction=INSPIREHEP_AGENT_PROMPT,
     tools=[get_author_citations_tool, get_paper_citations_tool, track_citations_updates_tool, search_papers_tool],
     output_key="inspirehep_report"
 )
