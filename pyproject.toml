@@ -1,5 +1,5 @@
 [project]
-name = "hep-ai-assistant"
+name = "HEPARA"
 version = "0.1.0"
 description = "High Energy Physics AI Research Assistant"
 readme = "README.md"
@@ -12,6 +12,7 @@ dependencies = [
     "google-genai>=2.6.0",
     "langchain-text-splitters>=1.1.2",
     "pandas>=3.0.2",
+    "pdg>=2026.0",
     "pymupdf4llm>=1.27.2.3",
     "python-dotenv>=1.2.2",
     "streamlit>=1.57.0",
