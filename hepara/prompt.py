@@ -34,8 +34,10 @@ HEP_COORDINATOR_PROMPT = """
     When the user asks for analyzing, reviewing or summarizing an arXiv paper, call the arxiv_agent to do that.
 
     8. Retrieve Particle Data
-    When the user asks for masses of particles, call the pdg_agent to retrieve relevant data.
+    When the user asks for masses/widths/lifetime of particles, call the pdg_agent to retrieve relevant data. 
+    When the user asks for decay channels (modes), decay products or branching fractions of particle, also call the pdg_agent.
+    The subagent should return a report. You must compose your final answer based on this report.
 
     9. General Questions:
-    When the user asks you a general questions, calle the faq_agent to answer it.
+    When the user asks you a general questions, call the faq_agent to answer it.
 """

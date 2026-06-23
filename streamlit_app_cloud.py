@@ -115,15 +115,27 @@ def reload_agent_modules():
     import hepara.prompt
     import hepara.subagents.arxiv_agent.agent
     import hepara.subagents.arxiv_agent.tools
+    import hepara.subagents.faq_agent.agent
+    import hepara.subagents.faq_agent.prompt
+    import hepara.subagents.faq_agent.tools
     import hepara.subagents.inspirehep_agent.agent
     import hepara.subagents.inspirehep_agent.prompt
     import hepara.subagents.inspirehep_agent.tools
+    import hepara.subagents.pdg_agent.agent
+    import hepara.subagents.pdg_agent.prompt
+    import hepara.subagents.pdg_agent.tools
 
     importlib.reload(hepara.subagents.arxiv_agent.tools)
+    importlib.reload(hepara.subagents.faq_agent.tools)
+    importlib.reload(hepara.subagents.faq_agent.prompt)
     importlib.reload(hepara.subagents.inspirehep_agent.tools)
     importlib.reload(hepara.subagents.inspirehep_agent.prompt)
+    importlib.reload(hepara.subagents.pdg_agent.tools)
+    importlib.reload(hepara.subagents.pdg_agent.prompt)
     importlib.reload(hepara.subagents.arxiv_agent.agent)
+    importlib.reload(hepara.subagents.faq_agent.agent)
     importlib.reload(hepara.subagents.inspirehep_agent.agent)
+    importlib.reload(hepara.subagents.pdg_agent.agent)
     importlib.reload(hepara.prompt)
     root_agent_module = importlib.reload(hepara.agent)
     return root_agent_module.hep_coordinator
@@ -294,7 +306,9 @@ def main() -> None:
 
     render_chat_history()
 
-    prompt = st.chat_input("Ask about papers, citations, trends, or arXiv downloads")
+    prompt = st.chat_input(
+        "Ask about papers, citations, particle data, or general HEP questions"
+    )
     if not prompt:
         render_pdf_downloads(config["PDF_PATH"])
         return
