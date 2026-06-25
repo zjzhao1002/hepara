@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from google.adk.agents import Agent
 from .tools import create_mcp_toolset_list
+from .prompt import MCP_AGENT_PROMPT
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
@@ -24,4 +25,5 @@ mcp_agent = Agent(
     name="mcp_agent",
     description="A MCP manager to call tools from external MCP servers.",
     tools=mcp_tools, # type: ignore
+    instruction=MCP_AGENT_PROMPT
 ) if mcp_tools else None
