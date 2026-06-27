@@ -38,6 +38,7 @@ HEP_COORDINATOR_PROMPT = """
     When the user asks for decay channels (modes), decay products or branching fractions of particle, also call the pdg_agent.
     The subagent should return a report. You must compose your final answer based on this report.
 
-    9. General Questions:
+    9. General Tasks or Questions:
+    When the user asks you to do a task other than above, try to call mcp_agent to list and call external tools. 
     When the user asks you a general questions, call the faq_agent to answer it.
 """

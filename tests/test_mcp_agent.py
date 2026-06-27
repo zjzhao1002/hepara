@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from hepara.subagents.mcp_agent.tools import create_mcp_toolset_list
+from hepara.subagents.mcp_agent.tools import create_mcp_toolset_list, list_mcp_servers
 
 
 class McpConfigurationTest(unittest.TestCase):
@@ -97,6 +97,32 @@ class McpConfigurationTest(unittest.TestCase):
         self.assertIn("invalid-args", log_text)
         self.assertIn("invalid-env", log_text)
 
+    def test_list_mcp_servers_only_reports_valid_servers(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_path = Path(tmpdir) / "mcp_list.json"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "mcpServers": {
+                            "valid": {"command": "runner"},
+                            "missing-command": {"args": ["one"]},
+                            "invalid-env": {
+                                "command": "runner",
+                                "env": {"TOKEN": 1},
+                            },
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertLogs(
+                "hepara.subagents.mcp_agent.tools", level="WARNING"
+            ):
+                servers = list_mcp_servers(config_path)
+
+        self.assertEqual(servers, "valid")
+
     def test_mcp_list_path_uses_override_and_expands_home(self):
         import hepara.subagents.mcp_agent.agent as mcp_agent_module
 
@@ -147,6 +173,13 @@ class McpConfigurationTest(unittest.TestCase):
             ):
                 importlib.reload(mcp_agent_module)
                 importlib.reload(root_agent_module)
+
+    def test_list_mcp_servers_tool_uses_configured_path_without_model_argument(self):
+        import hepara.subagents.mcp_agent.agent as mcp_agent_module
+
+        declaration = mcp_agent_module.list_mcp_servers_tool._get_declaration()
+
+        self.assertIsNone(declaration.parameters_json_schema)
 
 
 if __name__ == "__main__":

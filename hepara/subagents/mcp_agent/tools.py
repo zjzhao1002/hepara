@@ -97,8 +97,21 @@ def _create_mcp_toolset(name: str, server: Any) -> McpToolset | None:
 
 def create_mcp_toolset_list(filename: str | Path) -> list[McpToolset]:
     toolsets: list[McpToolset] = []
+    for _, toolset in _create_valid_mcp_toolsets(filename):
+        toolsets.append(toolset)
+    return toolsets
+
+
+def _create_valid_mcp_toolsets(filename: str | Path) -> list[tuple[str, McpToolset]]:
+    toolsets: list[tuple[str, McpToolset]] = []
     for name, server in _read_mcp_servers(filename).items():
         toolset = _create_mcp_toolset(name, server)
         if toolset is not None:
-            toolsets.append(toolset)
+            toolsets.append((name, toolset))
     return toolsets
+
+
+def list_mcp_servers_from_file(filename: str | Path) -> str:
+    return "\n".join(
+        name for name, _ in _create_valid_mcp_toolsets(filename)
+    )
