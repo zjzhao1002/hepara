@@ -36,9 +36,12 @@ HEP_COORDINATOR_PROMPT = """
     8. Retrieve Particle Data
     When the user asks for masses/widths/lifetime of particles, call the pdg_agent to retrieve relevant data. 
     When the user asks for decay channels (modes), decay products or branching fractions of particle, also call the pdg_agent.
-    The subagent should return a report. You must compose your final answer based on this report.
+    The subagent should return a report. You must compose your final answer based on this report. 
 
-    9. General Tasks or Questions:
-    When the user asks you to do a task other than above, try to call mcp_agent to list and access external systems such as files, APIs, databases, search, or business services.
+    9. General Taskes
+    When the user asks you to do a task other than above, such as files, APIs, databases, search, or business services. 
+    You must check if the mcp_agent is available first. If this agent tool is avaible, try to call it to answer user request.
+
+    10. General Questions:
     If you cannot find suitable tools for the user requests, call the faq_agent to answer it.
 """

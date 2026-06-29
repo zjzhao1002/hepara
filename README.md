@@ -158,6 +158,8 @@ docker run --rm -p 8501:8501 -p 11434:11434 \
 
     Skills are highly recommended for MCP tools because they give each generated subagent task-specific instructions for when and how to use its server. Set `SKILL_PATH` to a directory containing one skill folder per MCP server. Each skill folder name must exactly match the MCP server name in `mcp_config.json`; for example, the `git` MCP server uses `SKILL_PATH/git`, and `memory_server` uses `SKILL_PATH/memory_server`. If no matching skill is found, HEPARA still creates the subagent with a generic MCP-tool instruction.
 
+    After MCP is configured, you can ask HEPARA which MCP servers are available, then ask which tools a specific server exposes before using that server for a task.
+
     Restart the application after changing the MCP configuration or MCP skills.
 
 ---
